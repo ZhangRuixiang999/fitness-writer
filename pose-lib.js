@@ -109,14 +109,15 @@ function paintList(name) {
 function hasPose(name) { return !!MOVE_POSE[name]; }
 
 // 动作示意图（起始 / 发力）。返回 {a, b, muscles}，a/b 是 svg 字符串
-function moveFigureSVGs(name) {
+function moveFigureSVGs(name, extra) {
   const id = MOVE_POSE[name];
   if (!id) return null;
   const def = POSES[id];
   const pose = { a: def.a, b: def.b || def.a, fix: def.fix, mode: def.mode, prop: def.prop, r: def.r };
   const fr = poseFrames(pose);
   const muscles = paintList(name);
-  const svgA = poseSVG(pose, fr, "a", muscles, 'class="pose-svg"');
-  const svgB = def.b ? poseSVG(pose, fr, "b", muscles, 'class="pose-svg"') : null;
+  const attr = extra || 'class="pose-svg"';
+  const svgA = poseSVG(pose, fr, "a", muscles, attr);
+  const svgB = def.b ? poseSVG(pose, fr, "b", muscles, attr) : null;
   return { a: svgA, b: svgB, muscles, note: POSE_NOTE[name] || "" };
 }

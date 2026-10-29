@@ -40,7 +40,7 @@ function coverFigure(regionId, moveNames) {
 }
 
 // ---- 生成文案内容（不含渲染） ----
-function regionMovesPost(region, moveName, scene, tone, withAI, platform) {
+function regionMovesPost(region, moveName, scene, tone, withAI, platform, seed) {
   const r = REGIONS.find((x) => x.id === region);
   const move = r && r.moves.find((m) => m.name === moveName);
   if (!r || !move) return { error: "找不到动作。" };
@@ -50,41 +50,23 @@ function regionMovesPost(region, moveName, scene, tone, withAI, platform) {
   const poseFig = hasAction ? `<div class="post-poses"><div class="post-pose-col">${figures.a}<span>起始</span></div><div class="post-pose-col">${figures.b}<span>发力</span></div></div>` : "";
   const poseNote = figures.note ? `<p class="pose-note">${figures.note}</p>` : "";
   
-  const gc = GROUP_COPY[r.id] || {};
-  const cc = CAT_COPY[mm.cat] || {};
-  const opener = OPENERS[Math.floor(Math.random() * OPENERS.length)].replace("{move}", moveName).replace("{region}", r.name).replace("{scene}", scene);
-  const closer = CLOSERS[Math.floor(Math.random() * CLOSERS.length)];
-  const tips = move.steps.slice(0, 4);
-  
-  let body;
-  if (tone === "plain") {
-    body = `${opener}\n\n做对的感觉：${gc.feel || "目标肌肉在发力"}。\n\n${tips.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\n${cc.why || ""}，${cc.progress || ""}。\n\n入门重量：${mm.start}。${gc.tip || ""}\n\n${closer}`;
-  } else if (tone === "coach") {
-    body = `${gc.pain || `${r.name}练不到位`}？看${moveName}这几步。\n\n${tips.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\n${mm.tempo}\n\n${gc.fix || "慢一点，稳一点。"}\n\n${move.dose}，${mm.start}。`;
-  } else {
-    body = `${scene}｜${r.name}\n\n主打：${moveName}，${move.dose}\n\n${tips.join("\n")}\n\n${mm.rest}\n入门：${mm.start}\n推荐 ${stars(mm.rec)}，难度 ${stars(mm.diff)}\n\n${gc.ask || ""}`;
-  }
-  if (platform === "douyin") {
-    const shots = tips.map((s, i) => `镜头${i + 2}：${s}`).join("\n");
-    body = `【口播脚本 · 约 45 秒】\n镜头1（开场，2 秒内抛问题）：${gc.pain || `${r.name}练不到`}？${moveName}先看这一步。\n${shots}\n镜头${tips.length + 2}（收尾）：4 组 × 8–10 次，入门重量 ${mm.start}。${gc.fix || ""}\n\n字幕要点：${gc.feel || "目标肌肉在发力"}`;
-  }
-  if (withAI) body += `\n\n由肌理助手生成，动作要看真人示范视频，请按自身情况调整。`;
-  const tags = platform === "douyin" ? `#${r.name} #${moveName} #健身教学 #跟练` : `#${r.name} #${moveName} #健身干货 #训练记录`;
-  const titles = {
-    plain: [`${gc.pain ? gc.pain.split("，")[0] : r.name + "别只看镜子"}`, `${moveName}，${gc.fix || "这 1 步别漏"}`, `${scene ? scene.split("，")[0] : "健身房"}练${r.group}`],
-    coach: [`${moveName}，${gc.fix || "先把动作做对"}`, `${r.name}${gc.tip ? "：" + gc.tip.split("，")[0] : "发力这 3 点"}`, `${r.group}怎么练才有效`],
-    note: [`训练｜${moveName}`, `${r.name} · ${move.dose}`, `${scene ? scene.split("，")[0] : "健身房"}的${r.group}课`]
-  }[tone];
-  return { body, tags, poseFig, poseNote, titles };
+  const c = copyContext(region, moveName, scene, seed || Date.now());
+  if (!c) return { error: "找不到动作。" };
+  const body = platform === "douyin" ? buildDouyin(c).text : buildXhs(c, tone);
+  const titles = makeTitles(c);
+  const tags = makeTags(c, platform);
+  const aiNote = withAI ? "\n\n由肌理助手生成，动作要看真人示范视频，请按自身情况调整。" : "";
+  return { body: body + aiNote, tags, poseFig, poseNote, titles };
 }
 
 // ---- 渲染完整的文案卡片 ----
+let globalSeed = Date.now();
 function renderPost(region, moveName, scene, tone, withAI, platform) {
   const r = REGIONS.find((x) => x.id === region);
   const move = r && r.moves.find((m) => m.name === moveName);
   if (!r || !move) return "<p>找不到动作。</p>";
   const cover = coverFigure(region, [moveName]);
-  const post = regionMovesPost(region, moveName, scene, tone, withAI, platform);
+  const post = regionMovesPost(region, moveName, scene, tone, withAI, platform, globalSeed);
   if (post.error) return `<p>${post.error}</p>`;
   return `<article class="note-post">
       <div class="cover-wrap"><h2 class="cover-title">${post.titles[0]}</h2>${cover}</div>
@@ -96,13 +78,13 @@ function renderPost(region, moveName, scene, tone, withAI, platform) {
       <p class="rail-title">另外两个标题</p>
       <ul>${post.titles.slice(1).map((t) => `<li>${t}</li>`).join("")}</ul>
       <button type="button" class="ghost" id="copy">复制正文</button>
+      <button type="button" class="ghost" id="reseed">换一版</button>
       <p class="copied" id="copied" hidden>已复制。到小红书或抖音 App 里粘贴，自己发。</p>
     </div>`;
 }
 
 // ---- 表单提交事件 ----
-document.getElementById("form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+function showPost() {
   const r = muscleSelect.value;
   const m = moveSelect.value;
   const sc = document.getElementById("f-scene").value.trim() || "健身房";
@@ -112,11 +94,18 @@ document.getElementById("form").addEventListener("submit", async (e) => {
   const out = document.getElementById("output");
   out.innerHTML = renderPost(r, m, sc, t, ai, pf);
   out.hidden = false;
-  const data = regionMovesPost(r, m, sc, t, ai, pf);
+  const data = regionMovesPost(r, m, sc, t, ai, pf, globalSeed);
   if (data.error) return;
   document.getElementById("copy").onclick = async () => {
     await navigator.clipboard.writeText(`${data.titles[0]}\n\n${data.body}\n\n${data.tags}`);
     document.getElementById("copied").hidden = false;
   };
+  document.getElementById("reseed").onclick = () => { globalSeed = Date.now(); showPost(); };
+}
+
+document.getElementById("form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  globalSeed = Date.now();
+  showPost();
   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 });
