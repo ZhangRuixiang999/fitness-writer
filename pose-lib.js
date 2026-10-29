@@ -96,14 +96,14 @@ const POSE_NOTE = {
   单腿臀桥: "一只脚踩地，另一条腿伸直抬起。"
 };
 
-const MUSCLE_COLORS = ["#e53935", "#f4b400", "#3b5bdb", "#8e44ad", "#2ca02c", "#e91e8c", "#00a896", "#f57c00"];
+const COL_MAIN = "#14916d", COL_SYN = "#f0a030";
 
 // 为一个动作选出要涂色的肌肉：主练 + 协同（只取我们能画的）
 function paintList(name) {
   const m = moveMeta(name);
   const out = [];
   [...m.main, ...m.syn].forEach((n) => { if (PATCH[n] && !out.some((o) => o.name === n)) out.push({ name: n, role: m.main.includes(n) ? "主练" : "协同" }); });
-  return out.slice(0, 6).map((o, i) => ({ ...o, color: MUSCLE_COLORS[i % MUSCLE_COLORS.length] }));
+  return out.slice(0, 6).map((o) => ({ ...o, color: o.role === "主练" ? COL_MAIN : COL_SYN }));
 }
 
 function hasPose(name) { return !!MOVE_POSE[name]; }

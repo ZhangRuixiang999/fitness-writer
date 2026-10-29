@@ -67,7 +67,7 @@ const circEl = (c, r, at) => `<circle cx="${+c[0].toFixed(2)}" cy="${+c[1].toFix
 
 // 一层：先画描边底，再画填色，得到整体外轮廓
 function layerSVG(build, fill) {
-  return build('fill="#5a5a5a" stroke="#5a5a5a" stroke-width="1.7" stroke-linejoin="round"') + build(`fill="${fill}"`);
+  return build('fill="#7d7468" stroke="#7d7468" stroke-width="1.5" stroke-linejoin="round"') + build(`fill="${fill}"`);
 }
 
 // 部位 → [起点, 终点, 起点半径, 终点半径, 是否躯干类]
@@ -91,7 +91,7 @@ function patchEl(seg, t0, t1, side, wf, color) {
   const tm = (t0 + t1) / 2;
   const p0 = at(t0, 0.55), pm = at(tm, 1.1), p1 = at(t1, 0.55);
   const pts = [p0[0], pm[0], p1[0], p1[1], pm[1], p0[1]].map((p) => p.map((v) => +v.toFixed(2)).join(",")).join(" ");
-  return `<polygon points="${pts}" fill="${color}" stroke="${color}" stroke-width=".7" stroke-linejoin="round"/>`;
+  return `<polygon points="${pts}" fill="${color}" fill-opacity=".92" stroke="${color}" stroke-width="1.2" stroke-linejoin="round"/>`;
 }
 
 function propsSVG(pose, j, ground, when) {
@@ -139,7 +139,7 @@ function propsSVG(pose, j, ground, when) {
 function poseSVG(pose, frames, which, muscles, extra) {
   const j = frames[which];
   const fr = frames;
-  const FAR = "#8f8f8f", NEAR = "#bdbdbd";
+  const FAR = "#c9c0b2", NEAR = "url(#pg)";
   const far = layerSVG((at) => capEls(j.S, j.E2, 4.2, 3.4, at) + capEls(j.E2, j.W2, 3.3, 2.5, at) + capEls(j.H, j.K2, 6.5, 4.6, at) + capEls(j.K2, j.A2, 4.4, 3, at) + capEls(j.A2, j.T2, 2.6, 2, at), FAR);
   const body = layerSVG((at) => capEls(j.H, j.S, 7.5, 8.5, at) + capEls(j.S, j.N, 3, 2.6, at) + circEl(j.C, PL.hr, at) +
     capEls(j.H, j.K, 6.5, 4.6, at) + capEls(j.K, j.A, 4.4, 3, at) + capEls(j.A, j.T, 2.6, 2, at), NEAR);
@@ -147,7 +147,8 @@ function poseSVG(pose, frames, which, muscles, extra) {
   const sg = segs(j);
   const patches = (muscles || []).map((m) => (PATCH[m.name] || []).map(([s, t0, t1, side, wf]) => patchEl(sg[s], t0, t1, side, wf, m.color)).join("")).join("");
   const g = fr.ground;
-  const gl = g === null ? "" : `<line x1="${fr.vb[0]}" y1="${+g.toFixed(2)}" x2="${fr.vb[0] + fr.vb[2]}" y2="${+g.toFixed(2)}" stroke="#d6cec2" stroke-width="1.4"/>`;
+  const gl = g === null ? "" : `<ellipse cx="${+(fr.vb[0] + fr.vb[2] / 2).toFixed(2)}" cy="${+(g + 1.2).toFixed(2)}" rx="${+(fr.vb[2] * 0.36).toFixed(2)}" ry="2.2" fill="#d9d0c2" fill-opacity=".7"/><line x1="${+(fr.vb[0] + fr.vb[2] * 0.08).toFixed(2)}" y1="${+g.toFixed(2)}" x2="${+(fr.vb[0] + fr.vb[2] * 0.92).toFixed(2)}" y2="${+g.toFixed(2)}" stroke="#cfc6b8" stroke-width="1.2" stroke-linecap="round"/>`;
+  const defs = '<defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1ece3"/><stop offset="1" stop-color="#d8cfc0"/></linearGradient><filter id="psoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation=".45"/></filter></defs>';
   const vb = fr.vb.map((n) => +n.toFixed(2)).join(" ");
-  return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" ${extra || ""}>${gl}${propsSVG(pose, j, g, "under")}${far}${body}${arm}${patches}${propsSVG(pose, j, g, "over")}</svg>`;
+  return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" ${extra || ""}>${defs}${gl}${propsSVG(pose, j, g, "under")}${far}${body}${arm}<g filter="url(#psoft)">${patches}</g>${propsSVG(pose, j, g, "over")}</svg>`;
 }

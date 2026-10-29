@@ -49,24 +49,31 @@ function regionMovesPost(region, moveName, scene, tone, withAI, platform) {
   const hasAction = figures.a && figures.b;
   const poseFig = hasAction ? `<div class="post-poses"><div class="post-pose-col">${figures.a}<span>起始</span></div><div class="post-pose-col">${figures.b}<span>发力</span></div></div>` : "";
   const poseNote = figures.note ? `<p class="pose-note">${figures.note}</p>` : "";
+  
+  const gc = GROUP_COPY[r.id] || {};
+  const cc = CAT_COPY[mm.cat] || {};
+  const opener = OPENERS[Math.floor(Math.random() * OPENERS.length)].replace("{move}", moveName).replace("{region}", r.name).replace("{scene}", scene);
+  const closer = CLOSERS[Math.floor(Math.random() * CLOSERS.length)];
+  const tips = move.steps.slice(0, 4);
+  
   let body;
   if (tone === "plain") {
-    body = `${scene}，今天记的是${r.name}。\n\n主动作：${moveName}，${move.dose}。\n\n${move.steps.join("；")}。\n\n器械：${move.gear}。\n推荐指数：${stars(mm.rec)} (${REC_TEXT[mm.rec]})；难度：${stars(mm.diff)} (${DIFF_TEXT[mm.diff]})；入门重量：${mm.start}。`;
+    body = `${opener}\n\n做对的感觉：${gc.feel || "目标肌肉在发力"}。\n\n${tips.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\n${cc.why || ""}，${cc.progress || ""}。\n\n入门重量：${mm.start}。${gc.tip || ""}\n\n${closer}`;
   } else if (tone === "coach") {
-    body = `【${moveName}】${move.dose}\n器械：${move.gear}\n\n发力要点：\n` + move.steps.map((s, i) => `${i + 1}. ${s}`).join("\n") + `\n\n${mm.tempo}\n${mm.rest}\n推荐指数 ${stars(mm.rec)}，难度 ${stars(mm.diff)}。`;
+    body = `${gc.pain || `${r.name}练不到位`}？看${moveName}这几步。\n\n${tips.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\n${mm.tempo}\n\n${gc.fix || "慢一点，稳一点。"}\n\n${move.dose}，${mm.start}。`;
   } else {
-    body = `## ${r.name} · ${moveName}\n场景：${scene}\n\n${move.dose}\n\n${move.steps.join("\n\n")}`;
+    body = `${scene}｜${r.name}\n\n主打：${moveName}，${move.dose}\n\n${tips.join("\n")}\n\n${mm.rest}\n入门：${mm.start}\n推荐 ${stars(mm.rec)}，难度 ${stars(mm.diff)}\n\n${gc.ask || ""}`;
   }
   if (platform === "douyin") {
-    const shots = move.steps.map((s, i) => `镜头${i + 2}（${["正面", "侧面", "近景", "侧面", "近景"][i % 5]}）：${s}`).join("\n");
-    body = `【口播脚本 · 约 45 秒】\n镜头1（开场，2 秒内抛问题）：${r.name}练不到？${moveName}先看这一步。\n${shots}\n镜头${move.steps.length + 2}（收尾）：${move.dose}，入门重量 ${mm.start}。${stars(mm.rec)}，难度 ${stars(mm.diff)}。\n\n字幕要点：${mm.tempo}`;
+    const shots = tips.map((s, i) => `镜头${i + 2}：${s}`).join("\n");
+    body = `【口播脚本 · 约 45 秒】\n镜头1（开场，2 秒内抛问题）：${gc.pain || `${r.name}练不到`}？${moveName}先看这一步。\n${shots}\n镜头${tips.length + 2}（收尾）：4 组 × 8–10 次，入门重量 ${mm.start}。${gc.fix || ""}\n\n字幕要点：${gc.feel || "目标肌肉在发力"}`;
   }
-  if (withAI) body += `\n\n文案由写作助手整理，动作请按自身情况调整。`;
+  if (withAI) body += `\n\n由肌理助手生成，动作要看真人示范视频，请按自身情况调整。`;
   const tags = platform === "douyin" ? `#${r.name} #${moveName} #健身教学 #跟练` : `#${r.name} #${moveName} #健身干货 #训练记录`;
   const titles = {
-    plain: [`${r.name}别只看镜子`, `${moveName}，我少做了这 1 步`, `${scene}也能把${r.group}练到`],
-    coach: [`先改${moveName}，再加重量`, `${r.name}发力就这 3 点`, `今天只练${r.group}，动作别变形`],
-    note: [`训练记录｜${moveName}`, `${r.name} · ${move.dose}`, `${scene}的${r.group}课`]
+    plain: [`${gc.pain ? gc.pain.split("，")[0] : r.name + "别只看镜子"}`, `${moveName}，${gc.fix || "这 1 步别漏"}`, `${scene ? scene.split("，")[0] : "健身房"}练${r.group}`],
+    coach: [`${moveName}，${gc.fix || "先把动作做对"}`, `${r.name}${gc.tip ? "：" + gc.tip.split("，")[0] : "发力这 3 点"}`, `${r.group}怎么练才有效`],
+    note: [`训练｜${moveName}`, `${r.name} · ${move.dose}`, `${scene ? scene.split("，")[0] : "健身房"}的${r.group}课`]
   }[tone];
   return { body, tags, poseFig, poseNote, titles };
 }
