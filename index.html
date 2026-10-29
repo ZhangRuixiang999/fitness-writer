@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>肌理 · 健身写作助手</title>
+<link rel="stylesheet" href="styles.css?v=20261029b" />
+<link rel="stylesheet" href="styles-addon.css?v=20261029b" />
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#atlas">肌理</a>
+  <nav>
+    <a href="#atlas" data-nav="atlas" class="on">肌肉图鉴</a>
+    <a href="#write" data-nav="write">生成文案</a>
+  </nav>
+  <span class="sample-tag">交互样例 · 非医学建议</span>
+</header>
+
+<main id="atlas" class="page">
+  <section class="atlas-head">
+    <div>
+      <p class="kicker">首页</p>
+      <h1>选肌群・看训练</h1>
+    </div>
+  </section>
+
+  <section class="atlas">
+    <div class="figure-wrap">
+      <svg id="body" viewBox="0 0 230 214" role="img" aria-label="人体正面和背面肌群图，点击肌肉查看训练"></svg>
+      <p class="hint" id="hint">点身体上的一块区域，或点右侧名称，下面展开训练</p>
+    </div>
+
+    <aside class="rail" id="rail">
+      <p class="rail-title">肌群</p>
+      <ul id="muscle-list"></ul>
+    </aside>
+  </section>
+
+<section class="detail" id="detail" hidden>
+    <div class="detail-top">
+      <div>
+        <p class="kicker" id="d-group"></p>
+        <h2 id="d-name"></h2>
+        <p class="en" id="d-en"></p>
+      </div>
+      <button type="button" class="ghost" id="close-detail">收起并回到人体图</button>
+    </div>
+    
+    <p class="role" id="d-role"></p>
+    <div class="parts" id="parts"></div>
+    <div class="moves" id="moves"></div>
+    <p class="disclaimer">人体分区图来自开源库 react-body-highlighter（MIT 协议）；动作示范图来自 free-exercise-db（公共领域）。动作要看真人示范，点每个动作下面的「B站搜索」「抖音搜索」会打开该动作的搜索结果，请挑播主有教练资质、讲解清楚的视频。有伤病先问医生或教练，不要照着样例加重量。</p>
+  </section>
+</main>
+
+<main id="write" class="page" hidden>
+  <section class="atlas-head">
+    <div>
+      <p class="kicker">第二页</p>
+      <h1>生成小红书、抖音风格文案</h1>
+      <p class="lead">从已点开的肌群带出素材，配上动作示意图和肌肉位置图。这里是本地样例生成，不调用模型，也不发到小红书。</p>
+    </div>
+  </section>
+
+  <section class="writer">
+    <form id="form" class="form">
+      <label>肌群
+        <select id="f-muscle"></select>
+      </label>
+      <label>动作
+        <select id="f-move"></select>
+      </label>
+      <label>平台
+        <select id="f-platform">
+          <option value="xhs">小红书（图文笔记）</option>
+          <option value="douyin">抖音（口播脚本）</option>
+        </select>
+      </label>
+      <label>语气
+        <select id="f-tone">
+          <option value="plain">口语，像朋友提醒</option>
+          <option value="coach">教练口吻，短句</option>
+          <option value="note">训练笔记，偏记录</option>
+        </select>
+      </label>
+      <label>场景
+        <input id="f-scene" value="下班健身房，40 分钟" />
+      </label>
+      <label class="check"><input type="checkbox" id="f-ai" checked /> 文案末尾保留 AI 辅助说明</label>
+      <button type="submit" class="primary">生成文案和封面</button>
+    </form>
+
+    <div class="output" id="output" hidden></div>
+  </section>
+</main>
+
+<script src="library.js?v=20261029b"></script>
+<script src="details.js?v=20261029b"></script>
+<script src="regions.js?v=20261029b"></script>
+<script src="body-shapes.js?v=20261029b"></script>
+<script src="muscle-map.js?v=20261029b"></script>
+<script src="move-meta.js?v=20261029b"></script>
+<script src="pose-engine.js?v=20261029b"></script>
+<script src="pose-lib.js?v=20261029b"></script>
+<script src="app.js?v=20261029b"></script>
+<script src="writer.js?v=20261029b"></script>
+</body>
+</html>
