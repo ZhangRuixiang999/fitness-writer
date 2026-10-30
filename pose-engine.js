@@ -66,8 +66,8 @@ function capEls(A, B, ra, rb, at) {
 const circEl = (c, r, at) => `<circle cx="${+c[0].toFixed(2)}" cy="${+c[1].toFixed(2)}" r="${r}" ${at}/>`;
 
 // 一层：先画描边底，再画填色，得到整体外轮廓
-function layerSVG(build, fill) {
-  return build('fill="#7d7468" stroke="#7d7468" stroke-width="1.5" stroke-linejoin="round"') + build(`fill="${fill}"`);
+function layerSVG(build, fill, edge) {
+  return build(`fill="${edge || fill}" stroke="${edge || fill}" stroke-width="1.2" stroke-linejoin="round"`) + build(`fill="${fill}"`);
 }
 
 // 部位 → [起点, 终点, 起点半径, 终点半径, 是否躯干类]
@@ -126,9 +126,14 @@ function propsSVG(pose, j, ground, when) {
       if (kind === "post") out.push(`<line x1="${f(j.W[0])}" y1="${f(j.W[1])}" x2="${f(j.W[0])}" y2="${f(j.W[1] + 62)}" stroke="#cfc8bc" stroke-width="3"/>`);
       if (kind === "hangbar") out.push(`<line x1="${f(j.W[0] - 15)}" y1="${f(j.W[1])}" x2="${f(j.W[0] + 15)}" y2="${f(j.W[1])}" stroke="#a49c8e" stroke-width="2.4" stroke-linecap="round"/>`);
       if (kind === "cable") {
-        const [dx, dy] = arg.split(",").map(Number), l = Math.hypot(dx, dy);
-        const e = [j.W[0] + (dx / l) * 42, j.W[1] + (dy / l) * 42];
-        out.push(`<line x1="${f(j.W[0])}" y1="${f(j.W[1])}" x2="${f(e[0])}" y2="${f(e[1])}" stroke="#a49c8e" stroke-width="1" stroke-dasharray="2.5 1.5"/>`);
+        const [dx, dy] = arg.split(",").map(Number), l = Math.hypot(dx, dy) || 1;
+        const dir = [dx / l, dy / l];
+        const e = [j.W[0] + dir[0] * 46, j.W[1] + dir[1] * 46];
+        const top = [e[0], Math.min(e[1], j.C[1]) - 26];
+        out.push(`<line x1="${f(top[0])}" y1="${f(top[1])}" x2="${f(e[0])}" y2="${f(e[1])}" stroke="#9aa3b2" stroke-width="3.4" stroke-linecap="round"/>`);
+        out.push(`<circle cx="${f(top[0])}" cy="${f(top[1])}" r="2.4" fill="#6b7280"/>`);
+        out.push(`<line x1="${f(e[0])}" y1="${f(e[1])}" x2="${f(j.W[0])}" y2="${f(j.W[1])}" stroke="#4b5563" stroke-width="1.1"/>`);
+        out.push(`<rect x="${f(e[0] - 2.2)}" y="${f(e[1] - 1.4)}" width="4.4" height="6" rx="1.4" fill="#374151"/>`);
       }
     } else {
       const bar = (c, r) => `<circle cx="${f(c[0])}" cy="${f(c[1])}" r="${r}" fill="#3d3d3d" stroke="#222" stroke-width=".6"/><circle cx="${f(c[0])}" cy="${f(c[1])}" r="${r * 0.28}" fill="#9a9a9a"/>`;
@@ -144,21 +149,27 @@ function propsSVG(pose, j, ground, when) {
 function poseSVG(pose, frames, which, muscles, extra) {
   const j = frames[which];
   const fr = frames;
-  const FAR = "#c9c0b2", NEAR = "#efe8dd";
-  const far = layerSVG((at) => capEls(j.S, j.E2, 4.2, 3.4, at) + capEls(j.E2, j.W2, 3.3, 2.5, at) + capEls(j.H, j.K2, 6.5, 4.6, at) + capEls(j.K2, j.A2, 4.4, 3, at) + capEls(j.A2, j.T2, 2.6, 2, at), FAR);
-  const body = layerSVG((at) => capEls(j.H, j.S, 7.5, 8.5, at) + capEls(j.S, j.N, 3, 2.6, at) + circEl(j.C, PL.hr, at) +
-    capEls(j.H, j.K, 6.5, 4.6, at) + capEls(j.K, j.A, 4.4, 3, at) + capEls(j.A, j.T, 2.6, 2, at), NEAR);
-  const arm = layerSVG((at) => capEls(j.S, j.E, 4.2, 3.4, at) + capEls(j.E, j.W, 3.3, 2.5, at) + circEl(j.W, 2.8, at), NEAR);
+  const SKIN = "#f3d2b5", EDGE = "#e2b48e", FAR = "#ecd3bc";
+  const cloth = (at) => capEls(j.H, mvp(j.H, [j.S[0] - j.H[0], j.S[1] - j.H[1]], 0.62), 8.4, 9.2, at) + capEls(j.H, mvp(j.H, [j.K[0] - j.H[0], j.K[1] - j.H[1]], 0.42), 7.6, 6.2, at);
+  const skin = (at) => capEls(j.S, j.N, 3.1, 2.7, at) + circEl(j.C, PL.hr, at) +
+    capEls(j.S, j.E, 4, 3.3, at) + capEls(j.E, j.W, 3.2, 2.4, at) + circEl(j.W, 2.9, at) +
+    capEls(mvp(j.H, [j.K[0] - j.H[0], j.K[1] - j.H[1]], 0.38), j.K, 6.4, 4.4, at) + capEls(j.K, j.A, 4.3, 3, at) + capEls(j.A, j.T, 2.7, 2.1, at);
+  const far = layerSVG((at) => capEls(j.S, j.E2, 4, 3.3, at) + capEls(j.E2, j.W2, 3.2, 2.4, at) + capEls(j.H, j.K2, 7.2, 4.4, at) + capEls(j.K2, j.A2, 4.2, 3, at) + capEls(j.A2, j.T2, 2.6, 2, at), FAR, "#e4c6ac");
+  const shorts = layerSVG(cloth, "#2c3444", "#232a38");
+  const body = layerSVG(skin, SKIN, EDGE);
+  const face = (() => {
+    const f = (n) => +n.toFixed(2);
+    const e = mvp(j.C, [1, 0], 2.2);
+    return `<circle cx="${f(e[0])}" cy="${f(e[1] - 1.4)}" r="0.7" fill="#3a3330"/>`;
+  })();
   const sg = segs(j);
-  const limb = (at) => capEls(j.H, j.S, 7.5, 8.5, at) + capEls(j.S, j.N, 3, 2.6, at) + circEl(j.C, PL.hr, at) +
-    capEls(j.H, j.K, 6.5, 4.6, at) + capEls(j.K, j.A, 4.4, 3, at) + capEls(j.A, j.T, 2.6, 2, at) +
-    capEls(j.S, j.E, 4.2, 3.4, at) + capEls(j.E, j.W, 3.3, 2.5, at) + circEl(j.W, 2.8, at);
+  const limb = (at) => cloth(at) + skin(at);
   const uid = "pc" + Math.random().toString(36).slice(2, 8);
   const patches = (muscles || []).map((m) => (PATCH[m.name] || []).map(([s, t0, t1, side, wf]) => patchEl(sg[s], t0, t1, side, wf, m.color, uid)).join("")).join("");
   const g = fr.ground;
   const cx = fr.vb[0] + fr.vb[2] / 2;
-  const gl = g === null ? "" : `<ellipse cx="${+cx.toFixed(2)}" cy="${+(g + 1.6).toFixed(2)}" rx="${+(fr.vb[2] * 0.3).toFixed(2)}" ry="2.6" fill="#e4dccf" fill-opacity=".9"/>`;
+  const gl = g === null ? "" : `<ellipse cx="${+cx.toFixed(2)}" cy="${+(g + 1.6).toFixed(2)}" rx="${+(fr.vb[2] * 0.3).toFixed(2)}" ry="2.6" fill="#e7e2da"/>`;
   const defs = `<defs><clipPath id="${uid}">${limb('fill="#000"')}</clipPath></defs>`;
   const vb = fr.vb.map((n) => +n.toFixed(2)).join(" ");
-  return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" ${extra || ""}>${defs}${gl}${propsSVG(pose, j, g, "under")}${far}${body}${arm}${patches}${propsSVG(pose, j, g, "over")}</svg>`;
+  return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" ${extra || ""}>${defs}${gl}${propsSVG(pose, j, g, "under")}${far}${shorts}${body}${face}${patches}${propsSVG(pose, j, g, "over")}</svg>`;
 }

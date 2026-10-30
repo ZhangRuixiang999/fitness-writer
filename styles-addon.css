@@ -49,7 +49,8 @@ html { scroll-padding-top: 72px; }
 .pp-head h2 { margin: 6px 0 0; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; }
 .pp-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .pp-photo { margin: 0; position: relative; background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid #e3e8f0; }
-.pp-photo img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; object-position: center 30%; display: block; }
+.pp-photo.pp-draw { background: #f7f5f2; display: flex; align-items: center; justify-content: center; min-height: 280px; padding: 28px 12px 16px; }
+.pp-photo.pp-draw svg { width: 100%; height: 250px; }
 .pp-photo figcaption { position: absolute; top: 10px; left: 10px; background: #1d4ed8; color: #fff; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 8px; }
 .pp-photo:last-child figcaption { background: #0f766e; }
 .pp-nophoto { background: #fff; border-radius: 14px; padding: 28px; text-align: center; color: #5b6577; }

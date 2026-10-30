@@ -42,7 +42,7 @@ const POSES = {
   rowbar: { a: { tr: 65, th: 20, sh: -8, ua: 0, fa: 0 }, b: { tr: 65, th: 20, sh: -8, ua: -70, fa: 0 }, prop: ["plateW"] },
   curl: { a: { ua: 0, fa: 0 }, b: { ua: 0, fa: 155 }, prop: ["db"] },
   curlbar: { a: { ua: 0, fa: 0 }, b: { ua: 0, fa: 155 }, prop: ["plateW"] },
-  pushdown: { a: { ua: 8, fa: 100 }, b: { ua: 8, fa: 5 }, prop: ["cable:0,-1"] },
+  pushdown: { a: { ua: 6, fa: 95 }, b: { ua: 6, fa: 4 }, prop: ["cable:0,-1"] },
   pressseat: { a: { th: 85, sh: 5, ua: 20, fa: 170 }, b: { th: 85, sh: 5, ua: 175, fa: 178 }, fix: "H", prop: ["seat", "db"] },
   pressmach: { a: { th: 85, sh: 5, ua: 20, fa: 170 }, b: { th: 85, sh: 5, ua: 175, fa: 178 }, fix: "H", prop: ["seat"] },
   pressbar: { a: { ua: 20, fa: 170 }, b: { ua: 175, fa: 178 }, prop: ["plateW"] },

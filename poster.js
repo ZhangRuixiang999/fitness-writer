@@ -20,10 +20,11 @@ function posterData(region, moveName) {
 }
 
 function posterHTML(p) {
-  const photo = (src, cap) => `<figure class="pp-photo"><img src="${src}" alt="${p.name} ${cap}" crossorigin="anonymous" /><figcaption>${cap}</figcaption></figure>`;
-  const photos = p.photos
-    ? `<div class="pp-photos">${photo(p.photos[0], "起始")}${photo(p.photos[1], "动作完成")}</div>`
-    : `<p class="pp-nophoto">这个动作暂无示范照片，请看动作卡片里的视频搜索。</p>`;
+  const figs = moveFigureSVGs(p.name) || {};
+  const frame = (svg, cap) => `<figure class="pp-photo pp-draw"><figcaption>${cap}</figcaption>${svg}</figure>`;
+  const photos = figs.a
+    ? `<div class="pp-photos">${frame(figs.a, "起始")}${figs.b ? frame(figs.b, "动作完成") : ""}</div>`
+    : `<p class="pp-nophoto">这个动作暂无示意图，请看动作卡片里的视频搜索。</p>`;
   const nums = ["一", "二", "三"];
   return `<section class="poster" id="poster">
     <header class="pp-head">
@@ -49,7 +50,7 @@ function posterHTML(p) {
     <footer class="pp-foot">
       <span>${p.dose}</span><span>入门 ${p.start}</span><span>${p.tempo}</span>
     </footer>
-    <p class="pp-credit">示范照片来自 free-exercise-db（公共领域）。动作幅度因人而异，疼痛时停止并调整。</p>
+    <p class="pp-credit">示意图为统一画风的动作示意，标色处是主要参与的肌肉。动作要对照真人示范视频，疼痛时停止并调整。</p>
   </section>`;
 }
 
