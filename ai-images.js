@@ -13,10 +13,10 @@ const AI_IMG = {
   "平板支撑": "plank"
 };
 
-const AI_READY = ["绳索下压"];
+const AI_READY = ["绳索下压", "杠铃深蹲", "哑铃卧推", "杠铃俯身划船", "高位下拉", "传统硬拉", "杠铃肩推", "杠铃弯举", "臀推", "平板支撑"];
 
 function aiPhotos(moveName) {
   const f = AI_IMG[moveName];
   if (!f || !AI_READY.includes(moveName)) return null;
-  return [`ai-img/${f}-a.jpg?v=2`, `ai-img/${f}-b.jpg?v=2`];
+  return [`ai-img/${f}-a.jpg?v=3`, `ai-img/${f}-b.jpg?v=3`];
 }
