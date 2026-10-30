@@ -13,7 +13,7 @@ const AI_IMG = {
   "平板支撑": "plank"
 };
 
-const AI_READY = [];
+const AI_READY = ["绳索下压"];
 
 function aiPhotos(moveName) {
   const f = AI_IMG[moveName];
