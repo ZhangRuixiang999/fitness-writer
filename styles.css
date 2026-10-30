@@ -173,7 +173,7 @@ input, select {
   .brand { font-size: 18px; }
   .top nav { flex-wrap: wrap; gap: 6px; }
   .top nav a { padding: 5px 11px; font-size: 14px; }
-  .sample-tag { display: none; }
+  .sample-tag { margin-left: 0; font-size: 12px; }
   h1 { font-size: 30px; }
   .page { padding: 20px 16px 48px; }
 }

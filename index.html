@@ -4,8 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>肌理 · 健身写作助手</title>
-<link rel="stylesheet" href="styles.css?v=20261030a" />
-<link rel="stylesheet" href="styles-addon.css?v=20261030a" />
+<link rel="stylesheet" href="styles.css?v=20261030b" />
+<link rel="stylesheet" href="styles-addon.css?v=20261030b" />
 </head>
 <body>
 <header class="top">
@@ -13,15 +13,15 @@
   <nav>
     <a href="#atlas" data-nav="atlas" class="on">肌肉图鉴</a>
     <a href="#search" data-nav="search">动作检索</a>
+    <a href="#diet" data-nav="diet">饮食建议</a>
     <a href="#write" data-nav="write">生成文案</a>
   </nav>
-  <span class="sample-tag">交互样例 · 非医学建议</span>
+  <span class="sample-tag">仅供参考 · 非医学建议</span>
 </header>
 
 <main id="atlas" class="page">
   <section class="atlas-head">
     <div>
-      <p class="kicker">首页</p>
       <h1>选肌群・看训练</h1>
     </div>
   </section>
@@ -58,7 +58,6 @@
 <main id="search" class="page" hidden>
   <section class="atlas-head">
     <div>
-      <p class="kicker">联网更新</p>
       <h1>动作检索</h1>
       <p class="lead">联网读取开源动作库（800 多个动作，带示范图）。可以输入中文或英文，也可以只按肌肉、器械、难度筛选，找到喜欢的动作后加入自己的动作库。</p>
     </div>
@@ -80,8 +79,7 @@
 <main id="write" class="page" hidden>
   <section class="atlas-head">
     <div>
-      <p class="kicker">第二页</p>
-      <h1>生成小红书、抖音风格文案</h1>
+      <h1>生成文案</h1>
       <p class="lead">从已点开的肌群带出素材，配上动作示意图和肌肉位置图。这里是本地样例生成，不调用模型，也不发到小红书。</p>
     </div>
   </section>
@@ -110,6 +108,7 @@
       <label>场景
         <input id="f-scene" value="下班健身房，40 分钟" />
       </label>
+      <label class="check"><input type="checkbox" id="f-diet" /> 文案里加上练前练后的饮食建议</label>
       <label class="check"><input type="checkbox" id="f-ai" checked /> 文案末尾保留 AI 辅助说明</label>
       <button type="submit" class="primary">生成文案和封面</button>
     </form>
@@ -118,20 +117,67 @@
   </section>
 </main>
 
-<script src="library.js?v=20261030a"></script>
-<script src="details.js?v=20261030a"></script>
-<script src="regions.js?v=20261030a"></script>
-<script src="body-shapes.js?v=20261030a"></script>
-<script src="muscle-map.js?v=20261030a"></script>
-<script src="move-meta.js?v=20261030a"></script>
-<script src="pose-engine.js?v=20261030a"></script>
-<script src="pose-lib.js?v=20261030a"></script>
-<script src="custom-moves.js?v=20261030a"></script>
-<script src="copy-data.js?v=20261030a"></script>
-<script src="copy.js?v=20261030a"></script>
-<script src="copy-douyin.js?v=20261030a"></script>
-<script src="app.js?v=20261030a"></script>
-<script src="writer.js?v=20261030a"></script>
-<script src="search.js?v=20261030a"></script>
+<main id="diet" class="page" hidden>
+  <section class="atlas-head">
+    <div>
+      <h1>饮食建议与热量</h1>
+      <p class="lead">按身高、体重和训练量估算每天大约吃多少，再看练前练后怎么吃。数字是估算，不是处方，有基础病或在减重的人先问医生或营养师。</p>
+    </div>
+  </section>
+  <section class="diet-wrap">
+    <form id="d-form" class="form">
+      <label>性别
+        <select id="d-sex"><option value="m">男</option><option value="f">女</option></select>
+      </label>
+      <label>年龄
+        <input id="d-age" type="number" min="14" max="80" value="28" />
+      </label>
+      <label>身高（厘米）
+        <input id="d-h" type="number" min="120" max="230" value="175" />
+      </label>
+      <label>体重（公斤）
+        <input id="d-w" type="number" min="30" max="250" step="0.1" value="70" />
+      </label>
+      <label>平时活动
+        <select id="d-act">
+          <option value="1.2">几乎不运动，久坐</option>
+          <option value="1.375" selected>每周练 1–3 次</option>
+          <option value="1.55">每周练 3–5 次</option>
+          <option value="1.725">每天都练，或体力工作</option>
+        </select>
+      </label>
+      <label>目标
+        <select id="d-goal">
+          <option value="cut">减脂，制造一点缺口</option>
+          <option value="keep" selected>维持，吃够就行</option>
+          <option value="bulk">增肌，略微盈余</option>
+        </select>
+      </label>
+      <button type="submit" class="primary">计算</button>
+    </form>
+    <div id="d-out" hidden></div>
+    <section class="diet-tips">
+      <h2>练前练后怎么吃</h2>
+      <div class="tips-grid" id="d-tips"></div>
+    </section>
+  </section>
+</main>
+
+<script src="library.js?v=20261030b"></script>
+<script src="details.js?v=20261030b"></script>
+<script src="regions.js?v=20261030b"></script>
+<script src="body-shapes.js?v=20261030b"></script>
+<script src="muscle-map.js?v=20261030b"></script>
+<script src="move-meta.js?v=20261030b"></script>
+<script src="pose-engine.js?v=20261030b"></script>
+<script src="pose-lib.js?v=20261030b"></script>
+<script src="custom-moves.js?v=20261030b"></script>
+<script src="copy-data.js?v=20261030b"></script>
+<script src="copy.js?v=20261030b"></script>
+<script src="copy-douyin.js?v=20261030b"></script>
+<script src="app.js?v=20261030b"></script>
+<script src="writer.js?v=20261030b"></script>
+<script src="search.js?v=20261030b"></script>
+<script src="diet.js?v=20261030b"></script>
 </body>
 </html>

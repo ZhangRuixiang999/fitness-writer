@@ -172,6 +172,7 @@ function showPage(id) {
   document.getElementById("atlas").hidden = id !== "atlas";
   document.getElementById("write").hidden = id !== "write";
   document.getElementById("search").hidden = id !== "search";
+  document.getElementById("diet").hidden = id !== "diet";
   window.scrollTo({ top: 0 });
 }
 document.querySelectorAll("[data-nav]").forEach((a) => {

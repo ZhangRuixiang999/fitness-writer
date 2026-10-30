@@ -40,7 +40,7 @@ function coverFigure(regionId, moveNames) {
 }
 
 // ---- 生成文案内容（不含渲染） ----
-function regionMovesPost(region, moveName, scene, tone, withAI, platform, seed) {
+function regionMovesPost(region, moveName, scene, tone, withAI, platform, seed, withDiet) {
   const r = REGIONS.find((x) => x.id === region);
   const move = r && r.moves.find((m) => m.name === moveName);
   if (!r || !move) return { error: "找不到动作。" };
@@ -49,36 +49,43 @@ function regionMovesPost(region, moveName, scene, tone, withAI, platform, seed) 
   const hasAction = figures.a && figures.b;
   const poseFig = hasAction ? `<div class="post-poses"><div class="post-pose-col">${figures.a}<span>起始</span></div><div class="post-pose-col">${figures.b}<span>发力</span></div></div>` : "";
   const poseNote = figures.note ? `<p class="pose-note">${figures.note}</p>` : "";
-  
+  const legend = (figures.muscles || []).map((m) => `<span class="chip" style="color:${m.color};border-color:${m.color}">${m.color === "#14916d" ? "主练" : "协同"} · ${m.name}</span>`).join("");
+
   const c = copyContext(region, moveName, scene, seed || Date.now());
   if (!c) return { error: "找不到动作。" };
   const body = platform === "douyin" ? buildDouyin(c).text : buildXhs(c, tone);
+  const diet = withDiet ? `\n\n${dietAdviceText(document.getElementById("d-goal").value)}` : "";
   const titles = makeTitles(c);
   const tags = makeTags(c, platform);
   const aiNote = withAI ? "\n\n由肌理助手生成，动作要看真人示范视频，请按自身情况调整。" : "";
-  return { body: body + aiNote, tags, poseFig, poseNote, titles };
+  return { body: body + diet + aiNote, tags, poseFig, poseNote, legend, titles };
 }
 
 // ---- 渲染完整的文案卡片 ----
 let globalSeed = Date.now();
-function renderPost(region, moveName, scene, tone, withAI, platform) {
+function renderPost(region, moveName, scene, tone, withAI, platform, withDiet) {
   const r = REGIONS.find((x) => x.id === region);
   const move = r && r.moves.find((m) => m.name === moveName);
   if (!r || !move) return "<p>找不到动作。</p>";
   const cover = coverFigure(region, [moveName]);
-  const post = regionMovesPost(region, moveName, scene, tone, withAI, platform, globalSeed);
+  const post = regionMovesPost(region, moveName, scene, tone, withAI, platform, globalSeed, withDiet);
   if (post.error) return `<p>${post.error}</p>`;
-  return `<article class="note-post">
+  const legend = post.legend ? `<div class="pose-legend">${post.legend}</div>` : "";
+  return `<article class="note-post" id="note-post">
       <div class="cover-wrap"><h2 class="cover-title">${post.titles[0]}</h2>${cover}</div>
-      ${post.poseFig}${post.poseNote}
+      ${post.poseFig}${legend}${post.poseNote}
       <pre class="post-body">${post.body}</pre>
       <p class="tags">${post.tags}</p>
     </article>
     <div class="alts">
       <p class="rail-title">另外两个标题</p>
       <ul>${post.titles.slice(1).map((t) => `<li>${t}</li>`).join("")}</ul>
-      <button type="button" class="ghost" id="copy">复制正文</button>
-      <button type="button" class="ghost" id="reseed">换一版</button>
+      <div class="export-row">
+        <button type="button" class="ghost" id="copy">复制正文</button>
+        <button type="button" class="ghost" id="reseed">换一版</button>
+        <button type="button" class="ghost" id="export-text">导出文案</button>
+        <button type="button" class="ghost" id="export-img">导出图片</button>
+      </div>
       <p class="copied" id="copied" hidden>已复制。到小红书或抖音 App 里粘贴，自己发。</p>
     </div>`;
 }
@@ -90,17 +97,28 @@ function showPost() {
   const sc = document.getElementById("f-scene").value.trim() || "健身房";
   const t = document.getElementById("f-tone").value;
   const ai = document.getElementById("f-ai").checked;
+  const diet = document.getElementById("f-diet").checked;
   const pf = document.getElementById("f-platform").value;
   const out = document.getElementById("output");
-  out.innerHTML = renderPost(r, m, sc, t, ai, pf);
+  out.innerHTML = renderPost(r, m, sc, t, ai, pf, diet);
   out.hidden = false;
-  const data = regionMovesPost(r, m, sc, t, ai, pf, globalSeed);
+  const data = regionMovesPost(r, m, sc, t, ai, pf, globalSeed, diet);
   if (data.error) return;
+  const full = `${data.titles[0]}\n\n${data.body}\n\n${data.tags}`;
   document.getElementById("copy").onclick = async () => {
-    await navigator.clipboard.writeText(`${data.titles[0]}\n\n${data.body}\n\n${data.tags}`);
+    await navigator.clipboard.writeText(full);
     document.getElementById("copied").hidden = false;
   };
   document.getElementById("reseed").onclick = () => { globalSeed = Date.now(); showPost(); };
+  document.getElementById("export-text").onclick = () => {
+    const blob = new Blob([full], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${m}-文案.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  document.getElementById("export-img").onclick = () => exportNoteImage(m);
 }
 
 document.getElementById("form").addEventListener("submit", (e) => {
@@ -109,3 +127,67 @@ document.getElementById("form").addEventListener("submit", (e) => {
   showPost();
   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 });
+
+// 把文案卡片画成一张图下载。foreignObject 在部分浏览器里不可靠，这里用 canvas 逐行绘制。
+function exportNoteImage(moveName) {
+  const post = document.getElementById("note-post");
+  const title = post.querySelector(".cover-title").textContent;
+  const body = post.querySelector(".post-body").textContent;
+  const tags = post.querySelector(".tags").textContent;
+  const svgs = [...post.querySelectorAll(".post-pose-col svg, .cover-fig svg")].slice(0, 4);
+  const W = 1080, pad = 64;
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  ctx.font = "30px sans-serif";
+  const lines = wrapLines(ctx, body, W - pad * 2);
+  const imgH = svgs.length ? 460 : 0;
+  canvas.width = W;
+  canvas.height = pad + 90 + imgH + lines.length * 46 + 120;
+
+  ctx.fillStyle = "#f6f1ea";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#1c1916";
+  ctx.font = "600 42px sans-serif";
+  ctx.fillText(title, pad, pad + 42);
+
+  const draw = svgs.map((svg) => new Promise((res) => {
+    const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); res(img); };
+    img.onerror = () => res(null);
+    img.src = url;
+  }));
+  Promise.all(draw).then((imgs) => {
+    let y = pad + 90;
+    imgs.filter(Boolean).forEach((img, i) => {
+      const col = i % 2, row = Math.floor(i / 2);
+      ctx.drawImage(img, pad + col * 480, y + row * 230, 440, 210);
+    });
+    y += imgH;
+    ctx.fillStyle = "#1c1916";
+    ctx.font = "30px sans-serif";
+    lines.forEach((ln) => { ctx.fillText(ln, pad, y); y += 46; });
+    y += 20;
+    ctx.fillStyle = "#1f6f5b";
+    ctx.font = "26px sans-serif";
+    ctx.fillText(tags, pad, y);
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download = `${moveName}-配图.png`;
+    a.click();
+  });
+}
+
+function wrapLines(ctx, text, maxW) {
+  const out = [];
+  text.split("\n").forEach((para) => {
+    if (!para) { out.push(""); return; }
+    let cur = "";
+    [...para].forEach((ch) => {
+      if (ctx.measureText(cur + ch).width > maxW) { out.push(cur); cur = ch; } else cur += ch;
+    });
+    if (cur) out.push(cur);
+  });
+  return out.slice(0, 40);
+}
