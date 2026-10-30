@@ -67,13 +67,12 @@ function renderPost(region, moveName, scene, tone, withAI, platform, withDiet) {
   const r = REGIONS.find((x) => x.id === region);
   const move = r && r.moves.find((m) => m.name === moveName);
   if (!r || !move) return "<p>找不到动作。</p>";
-  const cover = coverFigure(region, [moveName]);
   const post = regionMovesPost(region, moveName, scene, tone, withAI, platform, globalSeed, withDiet);
   if (post.error) return `<p>${post.error}</p>`;
-  const legend = post.legend ? `<div class="pose-legend">${post.legend}</div>` : "";
+  const p = posterData(region, moveName);
   return `<article class="note-post" id="note-post">
-      <div class="cover-wrap"><h2 class="cover-title">${post.titles[0]}</h2>${cover}</div>
-      ${post.poseFig}${legend}${post.poseNote}
+      ${posterHTML(p)}
+      ${withDiet ? posterExtraHTML(p, true) : ""}
       <pre class="post-body">${post.body}</pre>
       <p class="tags">${post.tags}</p>
     </article>
@@ -118,7 +117,7 @@ function showPost() {
     a.click();
     URL.revokeObjectURL(a.href);
   };
-  document.getElementById("export-img").onclick = () => exportNoteImage(m);
+  document.getElementById("export-img").onclick = () => exportPosters(m);
 }
 
 document.getElementById("form").addEventListener("submit", (e) => {
@@ -128,66 +127,20 @@ document.getElementById("form").addEventListener("submit", (e) => {
   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 });
 
-// 把文案卡片画成一张图下载。foreignObject 在部分浏览器里不可靠，这里用 canvas 逐行绘制。
-function exportNoteImage(moveName) {
-  const post = document.getElementById("note-post");
-  const title = post.querySelector(".cover-title").textContent;
-  const body = post.querySelector(".post-body").textContent;
-  const tags = post.querySelector(".tags").textContent;
-  const svgs = [...post.querySelectorAll(".post-pose-col svg, .cover-fig svg")].slice(0, 4);
-  const W = 1080, pad = 64;
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  ctx.font = "30px sans-serif";
-  const lines = wrapLines(ctx, body, W - pad * 2);
-  const imgH = svgs.length ? 460 : 0;
-  canvas.width = W;
-  canvas.height = pad + 90 + imgH + lines.length * 46 + 120;
-
-  ctx.fillStyle = "#f6f1ea";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#1c1916";
-  ctx.font = "600 42px sans-serif";
-  ctx.fillText(title, pad, pad + 42);
-
-  const draw = svgs.map((svg) => new Promise((res) => {
-    const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
-    const img = new Image();
-    img.onload = () => { URL.revokeObjectURL(url); res(img); };
-    img.onerror = () => res(null);
-    img.src = url;
-  }));
-  Promise.all(draw).then((imgs) => {
-    let y = pad + 90;
-    imgs.filter(Boolean).forEach((img, i) => {
-      const col = i % 2, row = Math.floor(i / 2);
-      ctx.drawImage(img, pad + col * 480, y + row * 230, 440, 210);
-    });
-    y += imgH;
-    ctx.fillStyle = "#1c1916";
-    ctx.font = "30px sans-serif";
-    lines.forEach((ln) => { ctx.fillText(ln, pad, y); y += 46; });
-    y += 20;
-    ctx.fillStyle = "#1f6f5b";
-    ctx.font = "26px sans-serif";
-    ctx.fillText(tags, pad, y);
+// 把讲解卡片按原样导出成图片。卡片本身就是按导出尺寸排的，一张放不下时页面上已经拆成两张。
+function exportPosters(moveName) {
+  const cards = [...document.querySelectorAll("#note-post .poster")];
+  const btn = document.getElementById("export-img");
+  btn.disabled = true;
+  btn.textContent = "正在导出…";
+  Promise.all(cards.map((card, i) => cardToPNG(card).then((url) => {
     const a = document.createElement("a");
-    a.href = canvas.toDataURL("image/png");
-    a.download = `${moveName}-配图.png`;
+    a.href = url;
+    a.download = `${moveName}-讲解${cards.length > 1 ? i + 1 : ""}.png`;
     a.click();
-  });
+  }))).finally(() => { btn.disabled = false; btn.textContent = "导出图片"; });
 }
 
-function wrapLines(ctx, text, maxW) {
-  const out = [];
-  text.split("\n").forEach((para) => {
-    if (!para) { out.push(""); return; }
-    let cur = "";
-    [...para].forEach((ch) => {
-      if (ctx.measureText(cur + ch).width > maxW) { out.push(cur); cur = ch; } else cur += ch;
-    });
-    if (cur) out.push(cur);
-  });
-  return out.slice(0, 40);
+function cardToPNG(card) {
+  return html2canvas(card, { scale: 2, backgroundColor: "#f4f7fb", useCORS: true }).then((c) => c.toDataURL("image/png"));
 }

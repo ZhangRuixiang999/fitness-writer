@@ -43,6 +43,36 @@ html { scroll-padding-top: 72px; }
 .pose-legend .chip { font-size: 12px; padding: 3px 9px; border: 1.5px solid; background: #fff; }
 .export-row { display: flex; flex-wrap: wrap; gap: 8px; }
 
+.poster { background: #f4f7fb; border-radius: 18px; padding: 22px; margin-bottom: 16px; color: #1d2433; font-family: "PingFang SC", "Avenir Next", sans-serif; }
+.pp-head { text-align: center; margin-bottom: 14px; }
+.pp-head p { margin: 0; font-size: 13px; letter-spacing: 0.2em; color: #5b6577; }
+.pp-head h2 { margin: 6px 0 0; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; }
+.pp-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pp-photo { margin: 0; position: relative; background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid #e3e8f0; }
+.pp-photo img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; object-position: center 30%; display: block; }
+.pp-photo figcaption { position: absolute; top: 10px; left: 10px; background: #1d4ed8; color: #fff; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 8px; }
+.pp-photo:last-child figcaption { background: #0f766e; }
+.pp-nophoto { background: #fff; border-radius: 14px; padding: 28px; text-align: center; color: #5b6577; }
+.pp-row { display: grid; grid-template-columns: 0.8fr 1.4fr 1fr; gap: 12px; margin-top: 12px; }
+.pp-box { background: #fff; border-radius: 14px; padding: 14px 16px; border-top: 4px solid #1d4ed8; }
+.pp-box h3 { margin: 0 0 10px; font-size: 15px; }
+.pp-box ul, .pp-box ol { list-style: none; margin: 0; padding: 0; }
+.pp-box li { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; line-height: 1.5; padding: 5px 0; }
+.pp-box li b { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: #1d4ed8; color: #fff; font-size: 12px; display: grid; place-items: center; font-weight: 600; }
+.pp-bad { border-top-color: #dc2626; }
+.pp-bad li b { background: #dc2626; }
+.pp-motto { display: flex; align-items: center; gap: 14px; margin-top: 12px; background: #fff; border-radius: 14px; overflow: hidden; }
+.pp-motto span { background: #1d2433; color: #fff; padding: 16px 18px; font-weight: 600; font-size: 14px; }
+.pp-motto strong { font-size: 20px; font-weight: 700; color: #b91c1c; }
+.pp-foot { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.pp-foot span { background: #fff; border-radius: 999px; padding: 6px 12px; font-size: 12px; color: #3b4455; }
+.pp-credit { margin: 10px 2px 0; font-size: 11px; color: #8b93a3; }
+.pp-plan { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.pp-plan div { background: #fff; border-radius: 14px; padding: 14px 16px; }
+.pp-plan b { display: block; font-size: 12px; color: #5b6577; margin-bottom: 4px; }
+.pp-plan span { font-size: 15px; }
+@media (max-width: 700px) { .pp-row, .pp-photos, .pp-plan { grid-template-columns: 1fr; } .pp-head h2 { font-size: 26px; } .pp-motto { flex-direction: column; align-items: flex-start; gap: 8px; padding-bottom: 14px; } }
+
 .diet-wrap { max-width: 760px; margin: 24px auto 0; }
 .diet-result { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px 24px; margin-top: 20px; box-shadow: var(--shadow); }
 .diet-main { margin: 0 0 14px; font-size: 20px; }
