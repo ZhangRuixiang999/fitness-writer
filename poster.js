@@ -54,7 +54,7 @@ function posterHTML(p) {
     <footer class="pp-foot">
       <span>${p.dose}</span><span>入门 ${p.start}</span><span>${p.tempo}</span>
     </footer>
-    <p class="pp-credit">示意图为统一画风的动作示意，标色处是主要参与的肌肉。动作要对照真人示范视频，疼痛时停止并调整。</p>
+    <p class="pp-credit">${ai ? "示范图由 AI 生成，仅示意动作姿势。" : "示意图为统一画风的动作示意，标色处是主要参与的肌肉。"}动作要对照真人示范视频，疼痛时停止并调整。</p>
   </section>`;
 }
 
