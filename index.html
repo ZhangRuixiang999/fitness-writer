@@ -4,14 +4,15 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>肌理 · 健身写作助手</title>
-<link rel="stylesheet" href="styles.css?v=20261029b" />
-<link rel="stylesheet" href="styles-addon.css?v=20261029b" />
+<link rel="stylesheet" href="styles.css?v=20261030a" />
+<link rel="stylesheet" href="styles-addon.css?v=20261030a" />
 </head>
 <body>
 <header class="top">
   <a class="brand" href="#atlas">肌理</a>
   <nav>
     <a href="#atlas" data-nav="atlas" class="on">肌肉图鉴</a>
+    <a href="#search" data-nav="search">动作检索</a>
     <a href="#write" data-nav="write">生成文案</a>
   </nav>
   <span class="sample-tag">交互样例 · 非医学建议</span>
@@ -51,6 +52,28 @@
     <div class="parts" id="parts"></div>
     <div class="moves" id="moves"></div>
     <p class="disclaimer">人体分区图来自开源库 react-body-highlighter（MIT 协议）；动作示范图来自 free-exercise-db（公共领域）。动作要看真人示范，点每个动作下面的「B站搜索」「抖音搜索」会打开该动作的搜索结果，请挑播主有教练资质、讲解清楚的视频。有伤病先问医生或教练，不要照着样例加重量。</p>
+  </section>
+</main>
+
+<main id="search" class="page" hidden>
+  <section class="atlas-head">
+    <div>
+      <p class="kicker">联网更新</p>
+      <h1>动作检索</h1>
+      <p class="lead">联网读取开源动作库（800 多个动作，带示范图）。可以输入中文或英文，也可以只按肌肉、器械、难度筛选，找到喜欢的动作后加入自己的动作库。</p>
+    </div>
+  </section>
+  <section class="search-wrap">
+    <form id="s-form" class="s-form">
+      <input id="s-q" placeholder="动作名，如：深蹲、卧推、romanian deadlift" />
+      <select id="s-muscle"></select>
+      <select id="s-equip"></select>
+      <select id="s-level"></select>
+      <button type="submit" class="primary">搜索</button>
+    </form>
+    <p class="s-status" id="s-status">输入关键词，或直接选肌肉后点搜索。</p>
+    <div id="s-out" class="s-out"></div>
+    <button type="button" class="ghost" id="s-more" hidden>再看 12 个</button>
   </section>
 </main>
 
@@ -95,18 +118,20 @@
   </section>
 </main>
 
-<script src="library.js?v=20261029b"></script>
-<script src="details.js?v=20261029b"></script>
-<script src="regions.js?v=20261029b"></script>
-<script src="body-shapes.js?v=20261029b"></script>
-<script src="muscle-map.js?v=20261029b"></script>
-<script src="move-meta.js?v=20261029b"></script>
-<script src="pose-engine.js?v=20261029b"></script>
-<script src="pose-lib.js?v=20261029b"></script>
-<script src="copy-data.js?v=20261029b"></script>
-<script src="copy.js?v=20261029b"></script>
-<script src="copy-douyin.js?v=20261029b"></script>
-<script src="app.js?v=20261029b"></script>
-<script src="writer.js?v=20261029b"></script>
+<script src="library.js?v=20261030a"></script>
+<script src="details.js?v=20261030a"></script>
+<script src="regions.js?v=20261030a"></script>
+<script src="body-shapes.js?v=20261030a"></script>
+<script src="muscle-map.js?v=20261030a"></script>
+<script src="move-meta.js?v=20261030a"></script>
+<script src="pose-engine.js?v=20261030a"></script>
+<script src="pose-lib.js?v=20261030a"></script>
+<script src="custom-moves.js?v=20261030a"></script>
+<script src="copy-data.js?v=20261030a"></script>
+<script src="copy.js?v=20261030a"></script>
+<script src="copy-douyin.js?v=20261030a"></script>
+<script src="app.js?v=20261030a"></script>
+<script src="writer.js?v=20261030a"></script>
+<script src="search.js?v=20261030a"></script>
 </body>
 </html>

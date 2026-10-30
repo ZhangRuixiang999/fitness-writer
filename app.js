@@ -171,6 +171,7 @@ function showPage(id) {
   document.querySelectorAll("[data-nav]").forEach((n) => n.classList.toggle("on", n.dataset.nav === id));
   document.getElementById("atlas").hidden = id !== "atlas";
   document.getElementById("write").hidden = id !== "write";
+  document.getElementById("search").hidden = id !== "search";
   window.scrollTo({ top: 0 });
 }
 document.querySelectorAll("[data-nav]").forEach((a) => {
