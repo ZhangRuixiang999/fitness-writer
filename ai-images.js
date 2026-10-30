@@ -18,5 +18,5 @@ const AI_READY = ["绳索下压"];
 function aiPhotos(moveName) {
   const f = AI_IMG[moveName];
   if (!f || !AI_READY.includes(moveName)) return null;
-  return [`ai-img/${f}-a.jpg`, `ai-img/${f}-b.jpg`];
+  return [`ai-img/${f}-a.jpg?v=2`, `ai-img/${f}-b.jpg?v=2`];
 }
