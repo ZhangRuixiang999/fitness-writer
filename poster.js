@@ -20,9 +20,13 @@ function posterData(region, moveName) {
 }
 
 function posterHTML(p) {
-  const figs = moveFigureSVGs(p.name) || {};
+  const ai = typeof aiPhotos === "function" ? aiPhotos(p.name) : null;
+  const figs = ai ? {} : moveFigureSVGs(p.name) || {};
   const frame = (svg, cap) => `<figure class="pp-photo pp-draw"><figcaption>${cap}</figcaption>${svg}</figure>`;
-  const photos = figs.a
+  const aiFrame = (src, cap) => `<figure class="pp-photo pp-ai"><figcaption>${cap}</figcaption><img src="${src}" alt="${p.name} ${cap}"></figure>`;
+  const photos = ai
+    ? `<div class="pp-photos">${aiFrame(ai[0], "起始")}${aiFrame(ai[1], "动作完成")}</div>`
+    : figs.a
     ? `<div class="pp-photos">${frame(figs.a, "起始")}${figs.b ? frame(figs.b, "动作完成") : ""}</div>`
     : `<p class="pp-nophoto">这个动作暂无示意图，请看动作卡片里的视频搜索。</p>`;
   const nums = ["一", "二", "三"];
